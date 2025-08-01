@@ -1,26 +1,27 @@
 
+import { db } from '../db';
+import { calculationsTable } from '../db/schema';
 import { type GetHistoryInput, type Calculation } from '../schema';
+import { desc } from 'drizzle-orm';
 
 export async function getCalculationHistory(input: GetHistoryInput): Promise<Calculation[]> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to fetch calculation history from the database
-    // with pagination support, ordered by most recent first.
-    // Should include limit and offset for pagination.
-    
-    return [
-        {
-            id: 1,
-            expression: '2 + 2',
-            result: 4,
-            operation_type: 'basic',
-            created_at: new Date()
-        },
-        {
-            id: 2,
-            expression: 'sin(pi/2)',
-            result: 1,
-            operation_type: 'scientific',
-            created_at: new Date()
-        }
-    ];
+  try {
+    // Build query with pagination and ordering
+    let query = db.select()
+      .from(calculationsTable)
+      .orderBy(desc(calculationsTable.created_at)) // Most recent first
+      .limit(input.limit)
+      .offset(input.offset);
+
+    const results = await query.execute();
+
+    // Convert real column back to number (PostgreSQL real is returned as number, so no conversion needed)
+    return results.map(calculation => ({
+      ...calculation,
+      result: calculation.result // real columns are already numbers
+    }));
+  } catch (error) {
+    console.error('Failed to get calculation history:', error);
+    throw error;
+  }
 }

@@ -1,11 +1,18 @@
 
+import { db } from '../db';
+import { calculationsTable } from '../db/schema';
+
 export async function clearHistory(): Promise<{ success: boolean; message: string }> {
-    // This is a placeholder declaration! Real code should be implemented here.
-    // The goal of this handler is to clear all calculation history from the database.
-    // Should return success status and confirmation message.
-    
+  try {
+    // Delete all calculation records from the database
+    await db.delete(calculationsTable).execute();
+
     return {
-        success: true,
-        message: 'Calculation history cleared successfully'
+      success: true,
+      message: 'Calculation history cleared successfully'
     };
+  } catch (error) {
+    console.error('Failed to clear calculation history:', error);
+    throw error;
+  }
 }
